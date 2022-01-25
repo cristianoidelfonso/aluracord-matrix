@@ -1,3 +1,5 @@
+import Head from "next/head";
+
 function GlobalStyle(){
     return(
       <style global jsx>{`
@@ -29,10 +31,14 @@ function GlobalStyle(){
 
 function App({ Component, pageProps}){
     return(
-        <>
-            <GlobalStyle />
-            <Component {...pageProps} />
-        </>
+      <>
+        <Head>
+          <title>Ideltech Soluções - Aluracord</title>
+          <meta name="viewport" content="initial-scale=1.0, width=device-width" />
+        </Head>
+        <GlobalStyle />
+        <Component {...pageProps} />
+      </>
     );
 }
 
