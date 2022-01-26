@@ -35,20 +35,8 @@ function Title(props){
 export default function PaginaInicial() {
   // const username = 'cristianoidelfonso';
 
-  const [usergit, setUsergit] = useState('');
-  const [username, setUsername] = useState('');
+  const [username, setUsername] = useState('cristianoidelfonso');
   const roteamento = useRouter();
-  const dataUsergit = '';
-
-  fetch(`https://api.github.com/users/${username}`, {
-    method: "GET",
-    headers: {
-      'Content-type': 'application/json'
-    }
-  })
-  .then(response => response.json)
-  .then(data => console.log(data))
-  .catch((error) => console.log(error))
 
   return (
     <>
@@ -101,7 +89,6 @@ export default function PaginaInicial() {
               
               onChange={(event) => {
                   setUsername(event.target.value)
-                  setUsergit(event.target.value)
                 }
               }
               
@@ -135,7 +122,7 @@ export default function PaginaInicial() {
           {/* Photo Area */}
           <Box
             styleSheet={{
-              display: (username.length > 2) && (usergit === dataUsergit) ? 'flex' : 'none',
+              display: (username.length > 2) ? 'flex' : 'none',
               flexDirection: 'column',
               alignItems: 'center',
               maxWidth: '200px',
