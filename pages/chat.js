@@ -1,32 +1,44 @@
 import { Box, Text, TextField, Image, Button } from '@skynexui/components';
 import React, { useEffect, useState } from 'react';
+import { useRouter } from 'next/router';
 import appConfig from '../config.json';
 import { createClient } from '@supabase/supabase-js'
+
+import { ButtonSendSticker } from '../src/components/ButtonSendSticker';
 
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsImlhdCI6MTY0MzI5Mjk5NiwiZXhwIjoxOTU4ODY4OTk2fQ.WSsRRCMkUZziahuV4YnXx6Z__1_8LDYvUoTpVbOLDaw";
 const SUPABASE_URL = "https://jxkuotvqdwyhteeirsqp.supabase.co";
 const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 export default function ChatPage() {
-    // Sua lógica vai aqui
+	// Sua lógica vai aqui
+	const roteamento = useRouter();
+	const userLogged = roteamento.query.username;
 	const [message, setMessage] = useState('');
-	const [listMessage, setListMessage] = useState([]);
+	const [listMessage, setListMessage] = useState([
+		// {
+		// 	id: 1,
+		// 	from: 'cristianoidelfonso',
+		// 	text: ':sticker:https://c.tenor.com/TKpmh4WFEsAAAAAC/alura-gaveta-filmes.gif'
+		// }
+	]);
 
 	useEffect(() => {
-		supabaseClient.from('messages')
-									.select('*')
-									.order('id', {ascending:false})
-									.then(( { data } ) => {
-										// console.log(data)
-										setListMessage(data);
-									})
-									.catch((error) => console.log(error));
+		supabaseClient
+			.from('messages')
+			.select('*')
+			.order('id', {ascending:false})
+			.then(( { data } ) => {
+				// console.log(data)
+				setListMessage(data);
+			})
+			.catch((error) => console.log(error));
 	}, []);
 
 	function handleNewMessage(newMessage){
 		const message = {
 			// id: listMessage.length + 1,
-			// from: 'Cristiano Idelfonso',
+			from: userLogged,
 			text: newMessage,
 		}
 
@@ -47,44 +59,44 @@ export default function ChatPage() {
 
     // ./Sua lógica vai aqui
     return (
-        <Box
-            styleSheet={{
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                backgroundColor: appConfig.theme.colors.primary[500],
-                backgroundImage: `url(https://virtualbackgrounds.site/wp-content/uploads/2020/08/the-matrix-digital-rain.jpg)`,
-                backgroundRepeat: 'no-repeat', backgroundSize: 'cover', backgroundBlendMode: 'multiply',
-                color: appConfig.theme.colors.neutrals['000']
-            }}
-        >
-            <Box
-                styleSheet={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    flex: 1,
-                    boxShadow: '0 2px 10px 0 rgb(0 0 0 / 20%)',
-                    borderRadius: '5px',
-                    backgroundColor: appConfig.theme.colors.neutrals[700],
-                    height: '100%',
-                    maxWidth: '95%',
-                    maxHeight: '95vh',
-                    padding: '32px',
-                }}
-            >
-                <Header />
-                <Box
-                    styleSheet={{
-                        position: 'relative',
-                        display: 'flex',
-                        flex: 1,
-                        height: '80%',
-                        backgroundColor: appConfig.theme.colors.neutrals[600],
-                        flexDirection: 'column',
-                        borderRadius: '5px',
-                        padding: '16px',
-                    }}
-                >
+			<Box
+				styleSheet={{
+					display: 'flex', alignItems: 'center', justifyContent: 'center',
+					backgroundColor: appConfig.theme.colors.primary[500],
+					backgroundImage: `url(https://virtualbackgrounds.site/wp-content/uploads/2020/08/the-matrix-digital-rain.jpg)`,
+					backgroundRepeat: 'no-repeat', backgroundSize: 'cover', backgroundBlendMode: 'multiply',
+					color: appConfig.theme.colors.neutrals['000']
+				}}
+			>
+				<Box
+					styleSheet={{
+						display: 'flex',
+						flexDirection: 'column',
+						flex: 1,
+						boxShadow: '0 2px 10px 0 rgb(0 0 0 / 20%)',
+						borderRadius: '5px',
+						backgroundColor: appConfig.theme.colors.neutrals[700],
+						height: '100%',
+						maxWidth: '95%',
+						maxHeight: '95vh',
+						padding: '32px',
+					}}
+				>
+					<Header />
+					<Box
+						styleSheet={{
+							position: 'relative',
+							display: 'flex',
+							flex: 1,
+							height: '80%',
+							backgroundColor: appConfig.theme.colors.neutrals[600],
+							flexDirection: 'column',
+							borderRadius: '5px',
+							padding: '16px',
+						}}
+					>
 
-                    <MessageList messages={listMessage} />
+					<MessageList messages={listMessage} />
 
 					{/* {listMessage.map((currentMessage) => {
 						// console.log(currentMessage);
@@ -96,67 +108,74 @@ export default function ChatPage() {
 						}
 					)} */}
 
-                    <Box
-                        as="form"
-                        styleSheet={{
-                            display: 'flex',
-                            alignItems: 'center',
-                        }}
-                    >
-                        <TextField
-							value={message}
+						<Box
+								as="form"
+								styleSheet={{
+										display: 'flex',
+										alignItems: 'center',
+								}}
+						>
+							<TextField
+								value={message}
 							
-							onChange={(event) => {
-									// console.log(event);
-									setMessage(event.target.value)
+								onChange={(event) => {
+										// console.log(event);
+										setMessage(event.target.value)
+									}
 								}
-							}
 
-							onKeyPress={(event) => {
-									if(event.key === "Enter"){
-										// console.log(event.key);
+								onKeyPress={(event) => {
+										if(event.key === "Enter"){
+											// console.log(event.key);
+											event.preventDefault();
+											handleNewMessage(message);
+										}
+									}
+								}
+                            
+								placeholder="Insira sua mensagem aqui..."
+									type="textarea"
+									styleSheet={{
+											width: '100%',
+											border: '0',
+											resize: 'none',
+											borderRadius: '5px',
+											padding: '6px 8px',
+											backgroundColor: appConfig.theme.colors.neutrals[800],
+											marginRight: '12px',
+											color: appConfig.theme.colors.neutrals[200],
+									}}
+							
+							/>
+							{/* Callback */}
+							<ButtonSendSticker 
+								onStickerClick={(sticker) => {
+										console.log('[USANDO O COMPONENTE] Salvar este componente no banco!', sticker)
+									}
+								}
+							/>
+
+							<Button
+								type='button'
+								onClick={(event) => {
 										event.preventDefault();
+										// console.log('click');
 										handleNewMessage(message);
 									}
 								}
-							}
-                            
-							placeholder="Insira sua mensagem aqui..."
-                            type="textarea"
-                            styleSheet={{
-                                width: '100%',
-                                border: '0',
-                                resize: 'none',
-                                borderRadius: '5px',
-                                padding: '6px 8px',
-                                backgroundColor: appConfig.theme.colors.neutrals[800],
-                                marginRight: '12px',
-                                color: appConfig.theme.colors.neutrals[200],
-                            }}
-							
-                        />
-
-						<Button
-							type='button'
-							onClick={(event) => {
-									event.preventDefault();
-									// console.log('click');
-									handleNewMessage(message);
-								}
-							}
-							label='Ok'
-							buttonColors={{
-								contrastColor: appConfig.theme.colors.neutrals["000"],
-								mainColor: appConfig.theme.colors.primary[500],
-								mainColorLight: appConfig.theme.colors.primary[400],
-								mainColorStrong: appConfig.theme.colors.primary[600],
-							}}
-						/>
-                    </Box>
-                </Box>
-            </Box>
-        </Box>
-    )
+								label='Ok'
+								buttonColors={{
+									contrastColor: appConfig.theme.colors.neutrals["000"],
+									mainColor: appConfig.theme.colors.primary[500],
+									mainColorLight: appConfig.theme.colors.primary[400],
+									mainColorStrong: appConfig.theme.colors.primary[600],
+								}}
+							/>
+					</Box>
+				</Box>
+			</Box>
+		</Box>
+	)
 }
 
 function Header() {
@@ -230,11 +249,17 @@ function MessageList(props) {
 								}}
 								tag="span"
 							>
-                        		{(new Date().toLocaleDateString())}
-                    		</Text>
-                		</Box>
-                		{message.text}
-            		</Text>
+							{(new Date().toLocaleDateString())}
+							</Text>
+						</Box>
+						Condicional: {message.text.startsWith(':sticker:').toString()}
+						{message.text.startsWith(':sticker:') 
+							? 
+							( <Image src={message.text.replace(':sticker:', '')} /> )
+							:
+							( message.text )
+						}
+					</Text>
 				);
 			})
 		}
