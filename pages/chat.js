@@ -2,7 +2,7 @@ import { Box, Text, TextField, Image, Button } from '@skynexui/components';
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import appConfig from '../config.json';
-import { createClient } from '@supabase/supabase-js'
+import { createClient } from '@supabase/supabase-js';
 
 import { ButtonSendSticker } from '../src/components/ButtonSendSticker';
 
@@ -10,29 +10,41 @@ const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5v
 const SUPABASE_URL = "https://jxkuotvqdwyhteeirsqp.supabase.co";
 const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+
+function listenerMessagesRealTime(addMessage) {
+  return supabaseClient
+      .from('messages')
+      .on('INSERT', (responseLive) => {
+        addMessage(responseLive.new);
+      })
+      .subscribe();
+}
+
 export default function ChatPage() {
 	// Sua lógica vai aqui
 	const roteamento = useRouter();
 	const userLogged = roteamento.query.username;
 	const [message, setMessage] = useState('');
-	const [listMessage, setListMessage] = useState([
-		// {
-		// 	id: 1,
-		// 	from: 'cristianoidelfonso',
-		// 	text: ':sticker:https://c.tenor.com/TKpmh4WFEsAAAAAC/alura-gaveta-filmes.gif'
-		// }
-	]);
+	const [listMessage, setListMessage] = useState([]);
 
-	useEffect(() => {
+	useEffect( () => {
 		supabaseClient
 			.from('messages')
 			.select('*')
 			.order('id', {ascending:false})
 			.then(( { data } ) => {
-				// console.log(data)
 				setListMessage(data);
-			})
-			.catch((error) => console.log(error));
+			});
+
+    listenerMessagesRealTime( (newMessage) => {
+      setListMessage((currentListValue) => {
+        return [
+            newMessage,
+          ...currentListValue,
+        ]
+      });
+    });
+
 	}, []);
 
 	function handleNewMessage(newMessage){
@@ -46,14 +58,9 @@ export default function ChatPage() {
 			.from('messages')
 			.insert([message])
 			.then(({data}) => {
-			// console.log('Mensagem', response);
-				setListMessage([
-					data[0],
-					...listMessage, 
-				]);
-			})
-			.catch((error) => console.log(error))
-		
+        // console.log('Criando mensagem', data);
+			});
+
 		setMessage('');									
 	}
 
@@ -117,16 +124,12 @@ export default function ChatPage() {
 						>
 							<TextField
 								value={message}
-							
 								onChange={(event) => {
-										// console.log(event);
 										setMessage(event.target.value)
 									}
 								}
-
 								onKeyPress={(event) => {
 										if(event.key === "Enter"){
-											// console.log(event.key);
 											event.preventDefault();
 											handleNewMessage(message);
 										}
@@ -134,7 +137,8 @@ export default function ChatPage() {
 								}
                             
 								placeholder="Insira sua mensagem aqui..."
-									type="textarea"
+                type="textarea"
+                required={true}
 									styleSheet={{
 											width: '100%',
 											border: '0',
@@ -145,13 +149,13 @@ export default function ChatPage() {
 											marginRight: '12px',
 											color: appConfig.theme.colors.neutrals[200],
 									}}
-							
 							/>
+
 							{/* Callback */}
 							<ButtonSendSticker 
 								onStickerClick={(sticker) => {
-										console.log('[USANDO O COMPONENTE] Salvar este componente no banco!', sticker)
-									}
+                    handleNewMessage(`:sticker:${sticker}`)
+                  }
 								}
 							/>
 
@@ -159,10 +163,15 @@ export default function ChatPage() {
 								type='button'
 								onClick={(event) => {
 										event.preventDefault();
-										// console.log('click');
 										handleNewMessage(message);
 									}
 								}
+                onKeyPress={(event) => {
+                  if (event.key === "Enviar") {
+                    event.preventDefault();
+                    handleNovaMensagem(mensagem);
+                  }
+                }}
 								label='Ok'
 								buttonColors={{
 									contrastColor: appConfig.theme.colors.neutrals["000"],
@@ -197,7 +206,6 @@ function Header() {
 }
 
 function MessageList(props) {
-    // console.log('MessageList', props);
     return (
         <Box
             tag="ul"
@@ -252,17 +260,26 @@ function MessageList(props) {
 							{(new Date().toLocaleDateString())}
 							</Text>
 						</Box>
-						Condicional: {message.text.startsWith(':sticker:').toString()}
+	
 						{message.text.startsWith(':sticker:') 
 							? 
-							( <Image src={message.text.replace(':sticker:', '')} /> )
+							( <Image 
+                  styleSheet={{
+                    width: '20%',
+                    height: 'auto',
+                    display: 'inline-block',
+                    marginRight: '8px',
+                  }}
+                  src={message.text.replace(':sticker:', '')} /> 
+              )
 							:
 							( message.text )
 						}
-					</Text>
+		
+    			</Text>
 				);
 			})
 		}
-        </Box>
-    )
+    </Box>
+  )
 }
